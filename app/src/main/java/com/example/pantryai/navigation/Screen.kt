@@ -6,5 +6,10 @@ object Screen {
     const val RECIPES = "recipes"
     const val ASSISTANT = "assistant"
     const val FAVORITES = "favorites"
+    const val RECIPE_DETAIL = "recipe_detail/{recipeId}"
+
+    fun recipeDetail(recipeId: Int) : String {
+        return "recipe_detail/$recipeId"
+    }
 
 }
