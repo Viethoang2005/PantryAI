@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import com.example.pantryai.navigation.Screen
+import com.example.pantryai.ui.theme.PantryCream
 import com.example.pantryai.ui.theme.PantryGreen
 import com.example.pantryai.ui.theme.PantryGreenLight
 
@@ -56,7 +57,7 @@ fun PantryBottomAppBar(
     onNavigate: (String) -> Unit
 ) {
     NavigationBar(
-        containerColor = Color.White,
+        containerColor = PantryCream,
         contentColor = PantryGreen
     ) {
         bottomNavItems.forEach { item ->
@@ -69,9 +70,7 @@ fun PantryBottomAppBar(
             NavigationBarItem(
                 selected = selected,
                 onClick = {
-                    if (!selected) {
-                        onNavigate(item.route)
-                    }
+                    onNavigate(item.route)
                 },
                 icon = {
                     Icon(

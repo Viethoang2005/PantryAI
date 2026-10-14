@@ -58,7 +58,8 @@ fun PantryNavBar(){
                     currentDestination = currentDestination,
                     onNavigate = { route ->
                         navController.navigate(route) {
-                            popUpTo(Screen.HOME) { saveState = true }
+                            popUpTo(navController.graph.startDestinationId)
+                            { saveState = true }
                             launchSingleTop = true
                             restoreState = true
                         }
