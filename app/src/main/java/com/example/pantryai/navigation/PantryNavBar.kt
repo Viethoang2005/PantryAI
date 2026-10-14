@@ -1,19 +1,16 @@
 package com.example.pantryai.navigation
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -21,6 +18,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.pantryai.data.mock.FakeRecipes
+import com.example.pantryai.features.favorites.FavoriteViewModel
 import com.example.pantryai.ui.components.PantryBottomAppBar
 import com.example.pantryai.ui.screens.AssistantScreen
 import com.example.pantryai.ui.screens.FavoritesScreen
@@ -35,7 +33,11 @@ fun PantryNavBar(){
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
     val currentRoute = currentDestination?.route
-    var favoriteIds by remember { mutableStateOf(setOf<Int>()) }
+    val favoriteViewModel: FavoriteViewModel = hiltViewModel()
+    val favoriteEntities by favoriteViewModel.favorites.collectAsStateWithLifecycle()
+
+    val favoriteIds = favoriteEntities.map { it.recipeId }.toSet()
+
 
     val favoriteRecipes = FakeRecipes.recipes.filter {
         it.id in favoriteIds
@@ -130,17 +132,19 @@ fun PantryNavBar(){
                 val recipeId = entry.arguments?.getInt("recipeId")
                 val recipe = FakeRecipes.recipes.find { it.id == recipeId }
 
+
                 if(recipe != null) {
+                    val isFavorite by favoriteViewModel.isFavorite(recipeId = recipe.id)
+                        .collectAsStateWithLifecycle(initialValue = false)
                     RecipeDetailScreen(
                         recipe = recipe,
-                        isFavorite = recipe.id in favoriteIds,
+                        isFavorite = isFavorite,
                         onBack = { navController.popBackStack() },
                         onToggleFavorite = {
-                            favoriteIds = if(recipe.id in favoriteIds) {
-                                favoriteIds - recipe.id
-                            } else {
-                                favoriteIds + recipe.id
-                            }
+                            favoriteViewModel.toggleFavorite(
+                                recipeId = recipe.id,
+                                currentFavorite = isFavorite
+                            )
                         }
                     )
                 }
