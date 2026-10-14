@@ -17,13 +17,32 @@ class RecipeRepository @Inject constructor(
     }
 
     fun searchRecipes(query: String) : List<Recipe> {
-        if(query.isBlank()) return getRecipes()
+        return filterRecipes(query = query)
+    }
 
+    fun filterRecipes(
+        query: String = "",
+        category: String? = null,
+        difficulty: String? = null,
+        maxCookingTimeMinutes: Int? = null
+    ) : List<Recipe> {
         return FakeRecipes.recipes.filter { recipe ->
-            recipe.name.contains(query, ignoreCase = true) ||
+            val matchesQuery = query.isBlank() ||
+                    recipe.name.contains(query.trim(), ignoreCase = true) ||
                     recipe.ingredients.any { ingredient ->
-                        ingredient.contains(query, ignoreCase = true)
+                        ingredient.contains(query.trim(), ignoreCase = true)
                     }
+
+            val matchesCategory = category == null ||
+                    recipe.category.equals(category, ignoreCase = true)
+
+            val matchesDifficulty = difficulty == null ||
+                    recipe.difficulty.equals(difficulty, ignoreCase = true)
+
+            val matchesCookingTime = maxCookingTimeMinutes == null ||
+                    recipe.cookingTimeMinutes <= maxCookingTimeMinutes
+
+            matchesQuery && matchesCategory && matchesDifficulty && matchesCookingTime
         }
     }
 }

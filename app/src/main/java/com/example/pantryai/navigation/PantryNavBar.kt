@@ -44,6 +44,9 @@ fun PantryNavBar(){
     val recipes by recipeViewModel.recipes.collectAsStateWithLifecycle()
     val query by recipeViewModel.query.collectAsStateWithLifecycle()
 
+    val selectedCategory by recipeViewModel.selectedCategory.collectAsStateWithLifecycle()
+    val selectedDifficulty by recipeViewModel.selectedDifficulty.collectAsStateWithLifecycle()
+    val maxCookingTimeMinutes by recipeViewModel.maxCookingTimeMinutes.collectAsStateWithLifecycle()
     val showBottomBar = currentRoute in listOf(
         Screen.HOME,
         Screen.RECIPES,
@@ -87,9 +90,7 @@ fun PantryNavBar(){
             composable(Screen.HOME) {
 
                 HomeScreen(
-                    query = query,
-                    onQueryChange = recipeViewModel::onQueryChange,
-                    recipes = recipes,
+                    recipes = recipeViewModel.allRecipes,
                     onAskAi = {
                         navController.navigate(Screen.ASSISTANT)
                     },
@@ -106,7 +107,18 @@ fun PantryNavBar(){
                         navController.navigate(
                             Screen.recipeDetail(recipe.id)
                         )
-                    }
+                    },
+                    query =  query,
+                    onQueryChange = recipeViewModel::onQueryChange,
+                    categories = recipeViewModel.categories,
+                    difficulties = recipeViewModel.difficulties,
+                    selectedCategory = selectedCategory,
+                    selectedDifficulty = selectedDifficulty,
+                    maxCookingTimeMinutes = maxCookingTimeMinutes,
+                    onCategoryChange = recipeViewModel::onCategoryChange,
+                    onDifficultyChange = recipeViewModel::onDifficultyChange,
+                    onMaxCookingTimeChange = recipeViewModel::onMaxCookingTimeMinutesChange,
+                    onClearFilters = recipeViewModel::clearFilter
                 )
             }
             composable(route = Screen.RECIPE_DETAIL,
