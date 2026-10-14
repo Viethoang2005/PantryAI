@@ -1,4 +1,4 @@
-package com.example.pantryai.features.recipes
+package com.example.pantryai.viewModel
 
 import androidx.lifecycle.ViewModel
 import com.example.pantryai.data.model.Recipe
