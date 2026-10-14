@@ -1,5 +1,6 @@
 package com.example.pantryai.features.recipes
 
+import androidx.lifecycle.ViewModel
 import com.example.pantryai.data.model.Recipe
 import com.example.pantryai.data.repository.RecipeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,7 +13,7 @@ import javax.inject.Inject
 @HiltViewModel
 class RecipeViewModel @Inject constructor(
     private val repository: RecipeRepository
-) {
+) : ViewModel() {
 
     private val _recipes = MutableStateFlow(repository.getRecipes())
     val recipes: StateFlow<List<Recipe>> = _recipes.asStateFlow()
