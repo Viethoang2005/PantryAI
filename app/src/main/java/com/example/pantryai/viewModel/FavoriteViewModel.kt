@@ -1,11 +1,8 @@
-package com.example.pantryai.features.favorites
+package com.example.pantryai.viewModel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pantryai.data.local.FavoriteEntity
-import com.example.pantryai.data.local.PantryDatabase
 import com.example.pantryai.data.repository.FavoriteRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
