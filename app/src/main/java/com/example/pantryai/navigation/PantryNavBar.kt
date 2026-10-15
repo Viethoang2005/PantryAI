@@ -22,6 +22,7 @@ import com.example.pantryai.viewModel.FavoriteViewModel
 import com.example.pantryai.viewModel.RecipeViewModel
 import com.example.pantryai.ui.components.PantryBottomAppBar
 import com.example.pantryai.ui.screens.AssistantScreen
+import com.example.pantryai.ui.screens.ChatHistoryScreen
 import com.example.pantryai.ui.screens.FavoritesScreen
 import com.example.pantryai.ui.screens.HomeScreen
 import com.example.pantryai.ui.screens.RecipeDetailScreen
@@ -157,12 +158,20 @@ fun PantryNavBar(){
                 }
             }
 
-            composable(Screen.ASSISTANT) {
+            composable(Screen.ASSISTANT) { entry ->
+                val selectedConversationId by entry.savedStateHandle
+                    .getStateFlow("selectConversationId", 0L)
+                    .collectAsStateWithLifecycle()
+
                 AssistantScreen(
                     onRecipeClick = { recipe ->
                         navController.navigate(
                             Screen.recipeDetail(recipe.id)
                         )
+                    },
+                    selectedConversationId = selectedConversationId.takeIf { it > 0L },
+                    onSelectedConversationHandle = {
+                        entry.savedStateHandle["selectConversationId"] = 0L
                     }
                 )
             }
@@ -173,6 +182,22 @@ fun PantryNavBar(){
                     onRecipeClick = { recipe ->
                         navController.navigate(Screen.recipeDetail(recipe.id))
                     }
+                )
+            }
+
+            composable(Screen.CHAT_HISTORY) {
+                ChatHistoryScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                    onConversationClick = { conversationId ->
+                        navController.previousBackStackEntry
+                            ?.savedStateHandle
+                            ?.set("selectedConversationId", conversationId)
+
+                        navController.popBackStack()
+                    },
+
                 )
             }
         }

@@ -1,5 +1,6 @@
-package com.example.pantryai.data.local
+package com.example.pantryai.data.local.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -11,5 +12,7 @@ data class ChatMessageEntity(
     val content: String,
     val isFromUser: Boolean,
     val createdAt: Long = System.currentTimeMillis(),
-    val suggestedRecipeIds: String = ""
+    val suggestedRecipeIds: String = "",
+    @ColumnInfo(defaultValue = "1")
+    val conversationId: Long = 1L
 )

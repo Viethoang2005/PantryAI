@@ -1,45 +1,51 @@
 package com.example.pantryai.data.repository
 
-import com.example.pantryai.data.local.ChatDAO
-import com.example.pantryai.data.local.ChatMessageEntity
+import androidx.room.withTransaction
+import com.example.pantryai.data.local.dao.ChatDAO
+import com.example.pantryai.data.local.entity.ChatMessageEntity
+import com.example.pantryai.data.local.PantryDatabase
 import com.example.pantryai.data.model.ChatMessage
 import com.example.pantryai.data.model.Recipe
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class ChatHistoryRepository @Inject constructor(
     private val chatDao: ChatDAO,
-    private val recipeRepository: RecipeRepository
+    private val recipeRepository: RecipeRepository,
+    private val database: PantryDatabase,
+    private val conversationRepository: ChatConversationRepository
 ) {
 
-    fun getMessages() : Flow<List<ChatMessage>> {
-        return chatDao.getAllMessages().map { entities ->
-            val recipesById = recipeRepository.getRecipes()
-                .associateBy { it.id }
+    fun getMessages(conversationId: Long) : Flow<List<ChatMessage>> {
+        return chatDao.getMessagesForConversation(conversationId)
+            .map { entities ->
+                val recipesById = recipeRepository.getRecipes()
+                    .associateBy { it.id }
 
-            entities.map { entity ->
-                val recipeIds = entity.suggestedRecipeIds
-                    .split(",")
-                    .mapNotNull { it.toIntOrNull() }
+                entities.map { entity ->
+                    val recipeIds = entity.suggestedRecipeIds
+                        .split(",")
+                        .mapNotNull { it.toIntOrNull() }
 
-                val recipes = recipeIds.mapNotNull { recipesById[it] }
+                    val recipes = recipeIds.mapNotNull { recipesById[it] }
 
-                ChatMessage(
-                    id = entity.id,
-                    content = entity.content,
-                    isFromUser = entity.isFromUser,
-                    suggestedRecipes = recipes
-                )
+                    ChatMessage(
+                        id = entity.id,
+                        content = entity.content,
+                        isFromUser = entity.isFromUser,
+                        suggestedRecipes = recipes
+                    )
+                }
             }
-
-
-        }
     }
 
-    suspend fun ensureWelcomeMessage() {
-        if(chatDao.getMessageCount() == 0) {
+    suspend fun ensureWelcomeMessage(conversationId: Long) {
+        if (chatDao.getMessageCountForConversation(conversationId) == 0) {
             saveMessage(
+                conversationId = conversationId,
                 content = "Xin chào! 👋 Bạn đang có những nguyên liệu nào? " +
                         "Mình sẽ gợi ý món ngon cho bạn.",
                 isFromUser = false
@@ -47,20 +53,35 @@ class ChatHistoryRepository @Inject constructor(
         }
     }
 
-    suspend fun saveMessage(content: String, isFromUser: Boolean, suggestedRecipes: List<Recipe> = emptyList()) : Long {
-        val entity = ChatMessageEntity(
-            content = content,
-            isFromUser = isFromUser,
-            suggestedRecipeIds = suggestedRecipes.joinToString (","){
-                it.id.toString()
-            }
-        )
+    suspend fun saveMessage(conversationId: Long,content: String, isFromUser: Boolean, suggestedRecipes: List<Recipe> = emptyList()) : Long {
+        val now = System.currentTimeMillis()
 
-        return chatDao.insertMessage(entity)
+        return database.withTransaction {
+            val entity = ChatMessageEntity(
+                content = content,
+                isFromUser = isFromUser,
+                suggestedRecipeIds = suggestedRecipes.joinToString (","){
+                    it.id.toString()
+                },
+                conversationId = conversationId
+            )
+
+            val messageId = chatDao.insertMessage(entity)
+
+
+            conversationRepository.updateLastMessageTime(
+                conversationId = conversationId,
+                updatedAt = now
+            )
+
+            messageId
+        }
     }
 
-    suspend fun clearHistory() {
-        chatDao.deleteAllMessages()
-        ensureWelcomeMessage()
+    suspend fun clearHistory(conversationId: Long) {
+        database.withTransaction {
+            chatDao.deleteMessagesForConversation(conversationId = conversationId)
+        }
+        ensureWelcomeMessage(conversationId)
     }
 }
