@@ -1,12 +1,14 @@
+
 package com.example.pantryai.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,16 +17,16 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.pantryai.data.mock.FakeRecipes
 import com.example.pantryai.data.model.Recipe
+import com.example.pantryai.ui.components.RecipeCard
 import com.example.pantryai.ui.theme.PantryCream
 import com.example.pantryai.ui.theme.PantryGreen
 import com.example.pantryai.ui.theme.PantryGreenLight
@@ -33,8 +35,6 @@ import com.example.pantryai.ui.theme.PantryTextSecondary
 
 @Composable
 fun HomeScreen(
-    query: String,
-    onQueryChange: (String) -> Unit,
     recipes: List<Recipe>,
     onAskAi: () -> Unit,
     onRecipeClick: (Recipe) -> Unit
@@ -43,37 +43,33 @@ fun HomeScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(PantryCream),
-        contentPadding = PaddingValues(20.dp),
+        contentPadding = PaddingValues(
+            horizontal = 20.dp,
+            vertical = 24.dp
+        ),
         verticalArrangement = Arrangement.spacedBy(18.dp)
     ) {
+        // Header
         item {
-            Text(
-                text = "PantryAI 🥑",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = PantryGreen
-            )
+            Column(
+                verticalArrangement = Arrangement.spacedBy(5.dp)
+            ) {
+                Text(
+                    text = "PantryAI 🥑",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = PantryGreen
+                )
 
-            Text(
-                text = "Nấu ngon hơn mỗi ngày",
-                color = PantryTextSecondary,
-                fontSize = 14.sp
-            )
+                Text(
+                    text = "Nấu ngon hơn mỗi ngày",
+                    color = PantryTextSecondary,
+                    fontSize = 14.sp
+                )
+            }
         }
 
-        item {
-            OutlinedTextField(
-                value = query,
-                onValueChange = onQueryChange,
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                shape = RoundedCornerShape(16.dp),
-                placeholder = {
-                    Text("Tìm món ăn hoặc nguyên liệu...")
-                }
-            )
-        }
-
+        // AI assistant card
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -83,8 +79,8 @@ fun HomeScreen(
                 )
             ) {
                 Column(
-                    modifier = Modifier.padding(18.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                    modifier = Modifier.padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
                         text = "✨ Trợ lý nấu ăn AI",
@@ -94,13 +90,14 @@ fun HomeScreen(
                     )
 
                     Text(
-                        text = "Bạn có nguyên liệu gì? " +
-                                "Hãy để PantryAI gợi ý món ăn.",
+                        text = "Bạn đang có nguyên liệu gì? " +
+                                "Hãy để PantryAI gợi ý món ngon cho bạn.",
                         color = PantryText
                     )
 
                     Button(
                         onClick = onAskAi,
+                        shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = PantryGreen
                         )
@@ -111,74 +108,48 @@ fun HomeScreen(
             }
         }
 
+        // Suggested recipes heading
         item {
-            Text(
-                text = "Món ăn gợi ý",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = PantryText
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = "Món ăn gợi ý",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = PantryText
+                )
+
+                Text(
+                    text = "Một vài món ngon dành cho bạn",
+                    fontSize = 13.sp,
+                    color = PantryTextSecondary
+                )
+            }
+        }
+
+        // Recipe list
+        items(
+            items = recipes,
+            key = { it.id }
+        ) { recipe ->
+            RecipeCard(
+                recipe = recipe,
+                onClick = { onRecipeClick(recipe) }
             )
         }
 
-        items(recipes, key = { it.id }) { recipe ->
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(18.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                ),
-                onClick = {
-                    onRecipeClick(recipe)
-                }
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(14.dp)
-                ) {
-                    Text(
-                        text = recipe.emoji,
-                        fontSize = 36.sp
-                    )
-
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(5.dp)
-                    ) {
-                        Text(
-                            text = recipe.name,
-                            fontWeight = FontWeight.Bold,
-                            color = PantryText
-                        )
-
-                        Text(
-                            text = recipe.description,
-                            color = PantryTextSecondary,
-                            fontSize = 13.sp
-                        )
-
-                        Text(
-                            text = "${recipe.cookingTimeMinutes} phút • " +
-                                    recipe.difficulty,
-                            color = PantryGreen,
-                            fontSize = 12.sp
-                        )
-                    }
-                }
-            }
+        item {
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
-fun HomeScreenPreview() {
+private fun HomeScreenPreview() {
     HomeScreen(
-        query = "",
-        onQueryChange = {_ -> },
-        recipes = emptyList(),
+        recipes = FakeRecipes.recipes,
         onAskAi = {},
         onRecipeClick = {}
     )
