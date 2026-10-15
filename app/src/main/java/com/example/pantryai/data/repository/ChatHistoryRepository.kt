@@ -58,4 +58,9 @@ class ChatHistoryRepository @Inject constructor(
 
         return chatDao.insertMessage(entity)
     }
+
+    suspend fun clearHistory() {
+        chatDao.deleteAllMessages()
+        ensureWelcomeMessage()
+    }
 }

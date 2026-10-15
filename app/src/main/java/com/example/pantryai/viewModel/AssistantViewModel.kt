@@ -108,4 +108,12 @@ class AssistantViewModel @Inject constructor(
         return "Mình tìm được ${matchedRecipes.size} công thức có thể phù hợp với nguyên liệu của bạn. Nhấn vào món ăn để xem nguyên liệu và cách làm nhé! 🍳" to
                 matchedRecipes
     }
+
+    fun clearChatHistory() {
+        if(_isThinking.value) return
+
+        viewModelScope.launch {
+            chatHistoryRepository.clearHistory()
+        }
+    }
 }
