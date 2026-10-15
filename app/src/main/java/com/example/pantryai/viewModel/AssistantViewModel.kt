@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pantryai.data.model.ChatMessage
 import com.example.pantryai.data.model.Recipe
+import com.example.pantryai.data.repository.ChatHistoryRepository
 import com.example.pantryai.data.repository.RecipeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -15,47 +16,43 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class AssistantViewModel @Inject constructor(
-    private val recipeRepository: RecipeRepository
+    private val recipeRepository: RecipeRepository,
+    private val chatHistoryRepository: ChatHistoryRepository
 ) : ViewModel() {
-    private var nextMessageId = 2L
-    private val _messages = MutableStateFlow(
-        listOf(
-            ChatMessage(
-                id = 1L,
-                content = "Xin chào! 👋 Bạn đang có những nguyên liệu nào? " +
-                        "Mình sẽ gợi ý món ngon cho bạn.",
-                isFromUser = false
-            )
-        )
-    )
+    private val _messages = MutableStateFlow<List<ChatMessage>>(emptyList())
     val messages = _messages.asStateFlow()
 
     private val _isThinking = MutableStateFlow(false)
     val isThinking = _isThinking.asStateFlow()
 
+    init {
+        viewModelScope.launch {
+            chatHistoryRepository.ensureWelcomeMessage()
 
-
+            chatHistoryRepository.getMessages().collect { savedMessages ->
+                _messages.value = savedMessages
+            }
+        }
+    }
     fun sendMessage(input: String) {
         val text = input.trim()
 
         if (text.isBlank() || _isThinking.value) return
 
-        _messages.value += ChatMessage(
-            id = nextMessageId++,
-            content = text,
-            isFromUser = true
-        )
-
         viewModelScope.launch {
             _isThinking.value = true
 
             try {
+                chatHistoryRepository.saveMessage(
+                    content = text,
+                    isFromUser = true
+                )
+
                 delay(500.milliseconds)
 
                 val (reply, recipes) = generateMockReply(text)
 
-                _messages.value += ChatMessage(
-                    id = nextMessageId++,
+                chatHistoryRepository.saveMessage(
                     content = reply,
                     isFromUser = false,
                     suggestedRecipes = recipes
