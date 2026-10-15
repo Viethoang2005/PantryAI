@@ -1,11 +1,14 @@
 package com.example.pantryai.navigation
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavType
@@ -54,9 +57,13 @@ fun PantryNavBar(){
         Screen.FAVORITES
     )
 
+    val density = LocalDensity.current
+    val isKeyboardVisible = WindowInsets.ime.getBottom(density) > 0
+
+    val isAssistantScreen = currentRoute == Screen.ASSISTANT
     Scaffold(
         bottomBar = {
-            if(showBottomBar) {
+            if(showBottomBar && !(isAssistantScreen && isKeyboardVisible)) {
                 PantryBottomAppBar(
                     currentDestination = currentDestination,
                     onNavigate = { route ->
@@ -69,7 +76,8 @@ fun PantryNavBar(){
                     }
                 )
             }
-        }
+        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { innerPadding ->
         NavHost(
             navController = navController,
