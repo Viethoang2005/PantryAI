@@ -36,6 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.pantryai.data.model.Recipe
 import com.example.pantryai.ui.components.ChatInputBar
 import com.example.pantryai.ui.components.ChatMessageBubble
 import com.example.pantryai.ui.theme.PantryCream
@@ -46,6 +47,7 @@ import com.example.pantryai.viewModel.AssistantViewModel
 
 @Composable
 fun AssistantScreen(
+    onRecipeClick: (Recipe) -> Unit,
     viewModel: AssistantViewModel = hiltViewModel()
 ) {
     val messages by viewModel.messages.collectAsStateWithLifecycle()
@@ -122,7 +124,7 @@ fun AssistantScreen(
                 items = messages,
                 key = { message -> message.id }
             ) { message ->
-                ChatMessageBubble(message = message)
+                ChatMessageBubble(message = message, onRecipeClick = onRecipeClick)
             }
 
             if (isThinking) {
@@ -184,5 +186,7 @@ fun AssistantScreen(
 @Preview(showBackground = true)
 @Composable
 fun AssistantScreenPreview() {
-    AssistantScreen()
+    AssistantScreen(
+        onRecipeClick = {}
+    )
 }

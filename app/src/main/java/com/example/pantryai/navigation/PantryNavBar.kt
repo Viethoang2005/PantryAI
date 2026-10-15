@@ -137,9 +137,6 @@ fun PantryNavBar(){
                 )
             ) { entry ->
                 val recipeId = entry.arguments?.getInt("recipeId")
-
-
-
                 if(recipeId != null) {
                     val recipe = recipeViewModel.getRecipeById(recipeId)
                     if(recipe != null) {
@@ -161,7 +158,13 @@ fun PantryNavBar(){
             }
 
             composable(Screen.ASSISTANT) {
-                AssistantScreen()
+                AssistantScreen(
+                    onRecipeClick = { recipe ->
+                        navController.navigate(
+                            Screen.recipeDetail(recipe.id)
+                        )
+                    }
+                )
             }
 
             composable(Screen.FAVORITES) {
