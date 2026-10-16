@@ -9,7 +9,7 @@ import javax.inject.Singleton
 class RecipeRepository @Inject constructor(
 ) {
     fun getRecipes() : List<Recipe> {
-        return VietnameseRecipes.recipes
+        return FakeRecipes.recipes
     }
 
     fun getRecipeById(recipeId: Int) : Recipe? {
