@@ -1,23 +1,38 @@
+
 package com.example.pantryai.data.repository
 
-import com.example.pantryai.data.mock.FakeRecipes
 import com.example.pantryai.data.model.Recipe
+import java.text.Normalizer
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class RecipeRepository @Inject constructor(
-) {
-    fun getRecipes() : List<Recipe> {
-        return FakeRecipes.recipes
+class RecipeRepository @Inject constructor() {
+
+
+    fun getRecipes(): List<Recipe> {
+        return VietnameseRecipes.recipes
     }
 
-    fun getRecipeById(recipeId: Int) : Recipe? {
-        return FakeRecipes.recipes.find { it.id == recipeId }
+
+    fun getRecipeById(recipeId: Int): Recipe? {
+        return getRecipes().find { it.id == recipeId }
     }
 
-    fun searchRecipes(query: String) : List<Recipe> {
+
+    fun searchRecipes(query: String): List<Recipe> {
         return filterRecipes(query = query)
+    }
+
+
+    private fun normalizeVietnamese(text: String): String {
+        return Normalizer.normalize(
+            text.lowercase(Locale.ROOT),
+            Normalizer.Form.NFD
+        )
+            .replace("\\p{Mn}+".toRegex(), "")
+            .replace('đ', 'd')
     }
 
     fun filterRecipes(
@@ -25,24 +40,36 @@ class RecipeRepository @Inject constructor(
         category: String? = null,
         difficulty: String? = null,
         maxCookingTimeMinutes: Int? = null
-    ) : List<Recipe> {
-        return FakeRecipes.recipes.filter { recipe ->
-            val matchesQuery = query.isBlank() ||
-                    recipe.name.contains(query.trim(), ignoreCase = true) ||
-                    recipe.ingredients.any { ingredient ->
-                        ingredient.contains(query.trim(), ignoreCase = true)
-                    }
+    ): List<Recipe> {
+
+        val normalizedQuery = normalizeVietnamese(query.trim())
+
+        return getRecipes().filter { recipe ->
+            val normalizedName = normalizeVietnamese(recipe.name)
+
+            val matchesNameOrIngredient =
+                normalizedQuery.isBlank() ||
+                        normalizedName.contains(normalizedQuery) ||
+                        recipe.ingredients.any { ingredient ->
+                            normalizeVietnamese(ingredient)
+                                .contains(normalizedQuery)
+                        }
 
             val matchesCategory = category == null ||
-                    recipe.category.equals(category, ignoreCase = true)
+                    normalizeVietnamese(recipe.category) ==
+                    normalizeVietnamese(category)
 
             val matchesDifficulty = difficulty == null ||
-                    recipe.difficulty.equals(difficulty, ignoreCase = true)
+                    normalizeVietnamese(recipe.difficulty) ==
+                    normalizeVietnamese(difficulty)
 
             val matchesCookingTime = maxCookingTimeMinutes == null ||
                     recipe.cookingTimeMinutes <= maxCookingTimeMinutes
 
-            matchesQuery && matchesCategory && matchesDifficulty && matchesCookingTime
+            matchesNameOrIngredient &&
+                    matchesCategory &&
+                    matchesDifficulty &&
+                    matchesCookingTime
         }
     }
 }

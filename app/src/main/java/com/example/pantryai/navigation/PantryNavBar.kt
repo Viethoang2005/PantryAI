@@ -1,11 +1,14 @@
 package com.example.pantryai.navigation
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavType
@@ -19,6 +22,7 @@ import com.example.pantryai.viewModel.FavoriteViewModel
 import com.example.pantryai.viewModel.RecipeViewModel
 import com.example.pantryai.ui.components.PantryBottomAppBar
 import com.example.pantryai.ui.screens.AssistantScreen
+import com.example.pantryai.ui.screens.ChatHistoryScreen
 import com.example.pantryai.ui.screens.FavoritesScreen
 import com.example.pantryai.ui.screens.HomeScreen
 import com.example.pantryai.ui.screens.RecipeDetailScreen
@@ -54,9 +58,13 @@ fun PantryNavBar(){
         Screen.FAVORITES
     )
 
+    val density = LocalDensity.current
+    val isKeyboardVisible = WindowInsets.ime.getBottom(density) > 0
+
+    val isAssistantScreen = currentRoute == Screen.ASSISTANT
     Scaffold(
         bottomBar = {
-            if(showBottomBar) {
+            if(showBottomBar && !(isAssistantScreen && isKeyboardVisible)) {
                 PantryBottomAppBar(
                     currentDestination = currentDestination,
                     onNavigate = { route ->
@@ -69,7 +77,8 @@ fun PantryNavBar(){
                     }
                 )
             }
-        }
+        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { innerPadding ->
         NavHost(
             navController = navController,
@@ -129,9 +138,6 @@ fun PantryNavBar(){
                 )
             ) { entry ->
                 val recipeId = entry.arguments?.getInt("recipeId")
-
-
-
                 if(recipeId != null) {
                     val recipe = recipeViewModel.getRecipeById(recipeId)
                     if(recipe != null) {
@@ -152,8 +158,22 @@ fun PantryNavBar(){
                 }
             }
 
-            composable(Screen.ASSISTANT) {
-                AssistantScreen()
+            composable(Screen.ASSISTANT) { entry ->
+                val selectedConversationId by entry.savedStateHandle
+                    .getStateFlow("selectConversationId", 0L)
+                    .collectAsStateWithLifecycle()
+
+                AssistantScreen(
+                    onRecipeClick = { recipe ->
+                        navController.navigate(
+                            Screen.recipeDetail(recipe.id)
+                        )
+                    },
+                    selectedConversationId = selectedConversationId.takeIf { it > 0L },
+                    onSelectedConversationHandle = {
+                        entry.savedStateHandle["selectConversationId"] = 0L
+                    }
+                )
             }
 
             composable(Screen.FAVORITES) {
@@ -162,6 +182,22 @@ fun PantryNavBar(){
                     onRecipeClick = { recipe ->
                         navController.navigate(Screen.recipeDetail(recipe.id))
                     }
+                )
+            }
+
+            composable(Screen.CHAT_HISTORY) {
+                ChatHistoryScreen(
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                    onConversationClick = { conversationId ->
+                        navController.previousBackStackEntry
+                            ?.savedStateHandle
+                            ?.set("selectedConversationId", conversationId)
+
+                        navController.popBackStack()
+                    },
+
                 )
             }
         }

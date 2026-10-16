@@ -1,7 +1,7 @@
 package com.example.pantryai.data.repository
 
-import com.example.pantryai.data.local.FavoriteDAO
-import com.example.pantryai.data.local.FavoriteEntity
+import com.example.pantryai.data.local.dao.FavoriteDAO
+import com.example.pantryai.data.local.entity.FavoriteEntity
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 

@@ -2,7 +2,11 @@ package com.example.pantryai.di
 
 import android.content.Context
 import androidx.room.Room
-import com.example.pantryai.data.local.FavoriteDAO
+import com.example.pantryai.data.local.dao.ChatConversationDAO
+import com.example.pantryai.data.local.dao.ChatDAO
+import com.example.pantryai.data.local.dao.FavoriteDAO
+import com.example.pantryai.data.local.MIGRATION_1_2
+import com.example.pantryai.data.local.MIGRATION_2_3
 import com.example.pantryai.data.local.PantryDatabase
 import dagger.Module
 import dagger.Provides
@@ -24,7 +28,10 @@ object DatabaseModule {
             context,
             PantryDatabase::class.java,
             "pantryAi_database"
-        ).build()
+        )
+            .addMigrations(MIGRATION_1_2)
+            .addMigrations(MIGRATION_2_3)
+            .build()
     }
 
     @Provides
@@ -32,5 +39,19 @@ object DatabaseModule {
         database: PantryDatabase
     ) : FavoriteDAO {
         return database.favoriteDAO()
+    }
+
+    @Provides
+    fun provideChatDao(
+        database: PantryDatabase
+    ) : ChatDAO{
+        return database.chatDAO()
+    }
+
+    @Provides
+    fun provideChatConversationDao(
+        database: PantryDatabase
+    ): ChatConversationDAO {
+        return database.chatConversationDAO()
     }
 }

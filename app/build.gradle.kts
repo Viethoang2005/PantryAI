@@ -4,7 +4,7 @@ plugins {
 
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.hilt.android)
-
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -36,6 +36,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -66,4 +67,8 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
     ksp(libs.hilt.compiler)
+
+    implementation(platform("com.google.firebase:firebase-bom:35.0.1"))
+    implementation(libs.firebase.ai)
+    implementation("com.google.firebase:firebase-appcheck-debug")
 }
