@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.example.pantryai.navigation.PantryNavBar
-import com.example.pantryai.ui.screens.GeminiTestScreen
 import com.example.pantryai.ui.theme.PantryAITheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -16,7 +15,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PantryAITheme {
-                GeminiTestScreen()
+                PantryNavBar()
             }
         }
     }

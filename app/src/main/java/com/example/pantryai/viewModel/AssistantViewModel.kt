@@ -102,13 +102,13 @@ class AssistantViewModel @Inject constructor(
                     message = text
                 )
 
-                val (reply, recipes) = assistantRepository.generateReply(text)
+                val result = assistantRepository.generateReply(text)
 
                 chatHistoryRepository.saveMessage(
                     conversationId = conversationId,
-                    content = reply,
+                    content = result.message,
                     isFromUser = false,
-                    suggestedRecipes = recipes
+                    suggestedRecipes = result.recipes
                 )
             } catch (e: Exception) {
                 chatHistoryRepository.saveMessage(
