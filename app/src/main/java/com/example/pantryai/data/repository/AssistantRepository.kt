@@ -20,12 +20,15 @@ class AssistantRepository @Inject constructor(
 
     suspend fun generateReply(input: String): AssistantReply {
 
+
         val stopWords = setOf(
             "toi", "tôi", "co", "có", "va", "và",
             "voi", "với", "muon", "muốn", "nau", "nấu",
             "mon", "món", "gi", "gì", "lam", "làm",
             "cho", "minh", "mình", "cac", "các",
-            "nhung", "những", "nguyen", "liệu"
+            "nhung", "những", "nguyen", "liệu",
+            "giup", "giúp", "hay", "hãy", "nen", "nên",
+            "nao", "nào", "duoc", "được", "tu", "từ"
         )
 
         val keywords = Regex("[\\p{L}\\p{N}]+")
@@ -36,26 +39,46 @@ class AssistantRepository @Inject constructor(
 
         val allRecipes = recipeRepository.getRecipes()
 
-        val matchedRecipes = if (keywords.isEmpty()) {
-            emptyList()
-        } else {
-            allRecipes
-                .map { recipe ->
-                    val searchableText = (
-                            listOf(recipe.name) + recipe.ingredients
-                            ).joinToString(" ").lowercase()
+        val matchedRecipes = allRecipes
+            .map { recipe ->
+                val recipeName = recipe.name.lowercase()
+                val ingredientsText = recipe.ingredients
+                    .joinToString(" ")
+                    .lowercase()
 
-                    val score = keywords.count { keyword ->
-                        keyword in searchableText
-                    }
-
-                    recipe to score
+                val matchedNameKeywords = keywords.count { keyword ->
+                    recipeName.contains(keyword)
                 }
-                .filter { it.second > 0 }
-                .sortedByDescending { it.second }
-                .take(3)
-                .map { it.first }
-        }
+
+                val matchedIngredientKeywords = keywords.count { keyword ->
+                    ingredientsText.contains(keyword)
+                }
+
+                val score = matchedNameKeywords * 2 + matchedIngredientKeywords
+
+                val matchedIngredients = keywords.count { keyword ->
+                    ingredientsText.contains(keyword)
+                }
+
+                val matchRatio = if (keywords.isEmpty()) {
+                    0.0
+                } else {
+                    matchedIngredients.toDouble() / keywords.size
+                }
+
+                Triple(recipe, score, matchRatio)
+            }
+            .filter { (_, score, _) -> score > 0 }
+            .sortedWith(
+                compareByDescending<Triple<Recipe, Int, Double>> {
+                    it.second
+                }.thenByDescending {
+                    it.third
+                }
+            )
+            .take(3)
+            .map { it.first }
+
 
         val recipeContext = if (allRecipes.isEmpty()) {
             "Hiện chưa có công thức nào trong PantryAI."
