@@ -21,7 +21,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerValue
@@ -252,7 +251,7 @@ fun AssistantScreen(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = "Trợ lý nấu ăn AI 🥑",
+                        text = "Trợ lý nấu ăn AI",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
                         color = PantryGreen
@@ -262,7 +261,7 @@ fun AssistantScreen(
 
                     Text(
                         text = "Cho mình biết nguyên liệu bạn đang có nhé!",
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodySmall,
                         color = PantryTextSecondary
                     )
                 }

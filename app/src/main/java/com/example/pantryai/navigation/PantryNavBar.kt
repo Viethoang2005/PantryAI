@@ -77,8 +77,7 @@ fun PantryNavBar(){
                     }
                 )
             }
-        },
-        contentWindowInsets = WindowInsets(0, 0, 0, 0)
+        }
     ) { innerPadding ->
         NavHost(
             navController = navController,
