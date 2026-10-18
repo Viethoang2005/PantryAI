@@ -17,9 +17,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.pantryai.data.mock.FakeRecipes
-import com.example.pantryai.viewModel.FavoriteViewModel
-import com.example.pantryai.viewModel.RecipeViewModel
 import com.example.pantryai.ui.components.PantryBottomAppBar
 import com.example.pantryai.ui.screens.AssistantScreen
 import com.example.pantryai.ui.screens.ChatHistoryScreen
@@ -28,6 +25,8 @@ import com.example.pantryai.ui.screens.HomeScreen
 import com.example.pantryai.ui.screens.RecipeDetailScreen
 import com.example.pantryai.ui.screens.RecipesScreen
 import com.example.pantryai.ui.screens.SplashScreen
+import com.example.pantryai.viewModel.FavoriteViewModel
+import com.example.pantryai.viewModel.RecipeViewModel
 
 @Composable
 fun PantryNavBar(){
@@ -41,7 +40,7 @@ fun PantryNavBar(){
 
     val favoriteEntities by favoriteViewModel.favorites.collectAsStateWithLifecycle()
     val favoriteIds = favoriteEntities.map { it.recipeId }.toSet()
-    val favoriteRecipes = FakeRecipes.recipes.filter {
+    val favoriteRecipes = recipeViewModel.allRecipes.filter {
         it.id in favoriteIds
     }
 
